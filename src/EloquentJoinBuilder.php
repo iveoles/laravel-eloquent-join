@@ -194,6 +194,8 @@ class EloquentJoinBuilder extends Builder
                 break;
             }
 
+            $relation = camel_case($relation);
+
             /** @var Relation $relatedRelation */
             $relatedRelation   = $currentModel->$relation();
             $relatedModel      = $relatedRelation->getRelated();
@@ -280,16 +282,15 @@ class EloquentJoinBuilder extends Builder
         foreach ($relationBuilder->scopes as $scope) {
             if ($scope instanceof SoftDeletingScope) {
                 $this->applyClauseOnRelation($join, 'withoutTrashed', [], $relatedTableAlias);
-            } else {
-                throw new InvalidRelationGlobalScope();
             }
         }
     }
 
     private function applyClauseOnRelation(JoinClause $join, string $method, array $params, string $relatedTableAlias)
     {
-        if (in_array($method, ['where', 'orWhere'])) {
+        if (in_array($method, ['orderBy', 'latest', 'whereHas', 'where', 'orWhere', 'whereNotNull', 'orWhereNotNull'])) {
             try {
+
                 if (is_array($params[0])) {
                     foreach ($params[0] as $k => $param) {
                         $params[0][$relatedTableAlias.'.'.$k] = $param;
